@@ -1,0 +1,77 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Sora:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sora: "Sora", system-ui, sans-serif;
+  --font-dm-mono: "DM Mono", monospace;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[#0a0b0f] text-[#e8e9f0] antialiased;
+    font-family: var(--font-sora);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-white/20;
+  }
+}
+
+@layer utilities {
+  .font-mono {
+    font-family: var(--font-dm-mono);
+  }
+
+  /* Chat bubble prose override */
+  .prose-chat {
+    @apply text-[13.5px] leading-relaxed;
+  }
+
+  .prose-chat p {
+    @apply mb-2 last:mb-0;
+  }
+
+  .prose-chat ul,
+  .prose-chat ol {
+    @apply my-2 ml-4;
+  }
+
+  .prose-chat li {
+    @apply mb-1;
+  }
+
+  .prose-chat strong {
+    @apply font-semibold text-white;
+  }
+
+  .prose-chat code {
+    @apply font-mono text-[12px] bg-white/10 text-brand-300 px-1.5 py-0.5 rounded;
+  }
+
+  .prose-chat h1,
+  .prose-chat h2,
+  .prose-chat h3 {
+    @apply font-semibold text-white mt-3 mb-1.5;
+  }
+}
