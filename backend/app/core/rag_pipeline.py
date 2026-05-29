@@ -2,8 +2,6 @@ import logging
 import time
 from typing import List, Optional
 
-import ollama
-
 from app.config import settings
 from app.core.vector_store import vector_store
 from app.models.schemas import ChatMessage, ChatResponse, SourceChunk
@@ -15,8 +13,27 @@ class RAGPipeline:
     """Orchestrates retrieval + LLM generation."""
 
     def __init__(self):
-        self.model = settings.ollama_model
-        self.client = ollama.Client(host=settings.ollama_base_url, timeout=300)
+        self.provider = settings.llm_provider
+
+        if self.provider == "groq":
+            from groq import Groq
+
+            if not settings.groq_api_key:
+                raise ValueError(
+                    "GROQ_API_KEY is required when LLM_PROVIDER=groq. "
+                    "Get a free key at https://console.groq.com"
+                )
+            self.client = Groq(api_key=settings.groq_api_key)
+            self.model = settings.groq_model
+            logger.info(f"Using Groq LLM provider — model: {self.model}")
+        else:
+            import ollama
+
+            self.client = ollama.Client(
+                host=settings.ollama_base_url, timeout=300
+            )
+            self.model = settings.ollama_model
+            logger.info(f"Using Ollama LLM provider — model: {self.model}")
 
     # ── Prompts ───────────────────────────────────────────────────────────────
 
@@ -59,6 +76,31 @@ class RAGPipeline:
         )
         return "\n\n".join(parts)
 
+    # ── LLM Call ──────────────────────────────────────────────────────────────
+
+    def _generate(self, system_prompt: str, user_prompt: str) -> str:
+        """Call the configured LLM provider and return the answer text."""
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+
+        if self.provider == "groq":
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=0.3,
+                max_tokens=512,
+            )
+            return response.choices[0].message.content
+        else:
+            response = self.client.chat(
+                model=self.model,
+                messages=messages,
+                options={"temperature": 0.3, "num_predict": 512},
+            )
+            return response["message"]["content"]
+
     # ── Main query ────────────────────────────────────────────────────────────
 
     def query(
@@ -91,22 +133,14 @@ class RAGPipeline:
 
         # 2. Generate
         try:
-            response = self.client.chat(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": self._system_prompt()},
-                    {
-                        "role": "user",
-                        "content": self._user_prompt(question, chunks, history),
-                    },
-                ],
-                options={"temperature": 0.3, "num_predict": 512},
+            answer = self._generate(
+                system_prompt=self._system_prompt(),
+                user_prompt=self._user_prompt(question, chunks, history),
             )
-            answer = response["message"]["content"]
         except Exception as e:
-            logger.error(f"Ollama error: {e}")
+            logger.error(f"LLM error ({self.provider}): {e}")
             raise RuntimeError(
-                f"Failed to generate response. Is Ollama running? Error: {e}"
+                f"Failed to generate response from {self.provider}. Error: {e}"
             )
 
         # 3. Format sources

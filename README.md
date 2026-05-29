@@ -6,6 +6,7 @@
 ![Next.js](https://img.shields.io/badge/Next.js-black?style=flat&logo=next.js&logoColor=white)
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-FF6B35?style=flat)
 ![Ollama](https://img.shields.io/badge/Ollama-000000?style=flat)
+![Groq](https://img.shields.io/badge/Groq-F55036?style=flat&logo=groq&logoColor=white)
 ![Python](https://img.shields.io/badge/Python_3.11-3776AB?style=flat&logo=python&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
 
@@ -126,6 +127,47 @@ docker-compose up --build
 - Frontend → http://localhost:3000
 - Backend API → http://localhost:8000
 - API Docs → http://localhost:8000/docs
+
+---
+
+## ☁️ Cloud Deployment (Vercel + Render)
+
+Deploy a live version using **Groq** (free cloud LLM) instead of Ollama.
+
+### Prerequisites
+
+- [Groq API Key](https://console.groq.com) — free, ~30 req/min
+- [Render](https://render.com) account — free tier
+- [Vercel](https://vercel.com) account — free tier
+
+### 1. Deploy Backend (Render)
+
+1. Go to [render.com](https://render.com) → **New Web Service**
+2. Connect your GitHub repo: `gowthamiik09/rag-study-assistant`
+3. Set **Root Directory** to `backend`
+4. Set **Build Command**: `pip install -r requirements.txt`
+5. Set **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+6. Add **Environment Variables**:
+   | Variable | Value |
+   |---|---|
+   | `LLM_PROVIDER` | `groq` |
+   | `GROQ_API_KEY` | `your_groq_api_key` |
+   | `GROQ_MODEL` | `mixtral-8x7b-32768` |
+   | `PYTHON_VERSION` | `3.11.9` |
+7. Deploy! Note your URL: `https://your-app.onrender.com`
+
+### 2. Deploy Frontend (Vercel)
+
+1. Go to [vercel.com](https://vercel.com) → **Import Project**
+2. Connect your GitHub repo
+3. Set **Root Directory** to `frontend`
+4. Add **Environment Variable**:
+   | Variable | Value |
+   |---|---|
+   | `NEXT_PUBLIC_API_URL` | `https://your-app.onrender.com/api/v1` |
+5. Deploy!
+
+> **Note:** Render free tier sleeps after 15 min of inactivity. First request after idle takes ~30-60s.
 
 ---
 
