@@ -65,7 +65,7 @@ User Question ─►  Embed Query ──► Top-K Retrieval
 ### 1. Clone & install Ollama
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/rag-study-assistant.git
+git clone https://github.com/gowthamiik09/rag-study-assistant.git
 cd rag-study-assistant
 
 # Install and start Ollama, then pull the model
