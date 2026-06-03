@@ -20,7 +20,8 @@ async def lifespan(app: FastAPI):
     logger.info("🚀 RAG Study Assistant API starting up...")
     os.makedirs(settings.upload_dir, exist_ok=True)
     os.makedirs(settings.chroma_persist_dir, exist_ok=True)
-    logger.info(f"✅ Ready — model: {settings.ollama_model}")
+    model_name = settings.groq_model if settings.llm_provider == "groq" else settings.ollama_model
+    logger.info(f"✅ Ready — provider: {settings.llm_provider}, model: {model_name}")
     yield
     logger.info("👋 Shutting down.")
 
