@@ -254,8 +254,13 @@ All settings live in `backend/.env`:
 
 ## 💼 Resume Description
 
-> **RAG Study Assistant** | Python · FastAPI · Next.js · ChromaDB · Ollama  
-> Built a full-stack Retrieval-Augmented Generation (RAG) application with PDF ingestion (pypdf), recursive text chunking, vector embeddings via Sentence Transformers (`all-MiniLM-L6-v2`), and cosine similarity search using ChromaDB. Designed a FastAPI backend with async endpoints for document upload, management, and LLM-powered Q&A. Implemented a Next.js/TypeScript frontend with Framer Motion animations, drag-and-drop uploads, source citation display, and multi-turn chat history. Containerised with Docker Compose.
+> **RAG Study Assistant** | Python · FastAPI · Next.js · ChromaDB · Ollama · Groq
+>
+> • Built a full-stack RAG application using FastAPI and Next.js that allows users to upload PDFs and ask AI-powered questions with source citations and page numbers.
+>
+> • Implemented a semantic search pipeline using Sentence Transformers for vector embeddings and ChromaDB for cosine similarity retrieval, with recursive text chunking to preserve context across document boundaries.
+>
+> • Designed a dark-mode Next.js/TypeScript frontend with drag-and-drop uploads, multi-turn chat history, and Framer Motion animations; deployed via Docker Compose, Render, and Vercel.
 
 ---
 
