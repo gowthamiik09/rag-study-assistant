@@ -53,7 +53,7 @@ export default function DropZone({ onUploadSuccess }: Props) {
   return (
     <div className="px-3 py-2">
       <motion.div
-        {...getRootProps()}
+        {...(() => { const { onAnimationStart, onDragStart, onDragEnd, onDrag, ...rest } = getRootProps(); return rest; })()}
         whileHover={state !== "uploading" ? { scale: 1.01 } : {}}
         className={`relative border-2 border-dashed rounded-xl p-5 text-center cursor-pointer
           transition-all duration-200 select-none
