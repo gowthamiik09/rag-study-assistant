@@ -2,13 +2,13 @@
 
 > A production-style AI application that lets you upload documents and have intelligent conversations about them — powered by a full Retrieval-Augmented Generation (RAG) pipeline.
 
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-black?style=flat&logo=next.js&logoColor=white)
-![ChromaDB](https://img.shields.io/badge/ChromaDB-FF6B35?style=flat)
-![Ollama](https://img.shields.io/badge/Ollama-000000?style=flat)
-![Groq](https://img.shields.io/badge/Groq-F55036?style=flat&logo=groq&logoColor=white)
-![Python](https://img.shields.io/badge/Python_3.11-3776AB?style=flat&logo=python&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![FastAPI]
+![Next.js]
+![ChromaDB]
+![Ollama]
+![Groq]
+![Python]
+![TypeScript]
 
 ---
 
