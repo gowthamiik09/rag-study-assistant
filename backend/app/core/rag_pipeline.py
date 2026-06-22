@@ -1,6 +1,13 @@
+"""RAG pipeline that orchestrates document retrieval and LLM generation.
+
+Supports both Groq (cloud) and Ollama (local) providers with synchronous
+query and streaming (SSE) query modes.
+"""
+
+import json
 import logging
 import time
-from typing import List, Optional
+from typing import Generator, List, Optional
 
 from app.config import settings
 from app.core.vector_store import vector_store
@@ -10,9 +17,18 @@ logger = logging.getLogger(__name__)
 
 
 class RAGPipeline:
-    """Orchestrates retrieval + LLM generation."""
+    """Orchestrates retrieval + LLM generation.
 
-    def __init__(self):
+    Retrieves relevant document chunks from the vector store, builds a prompt
+    with conversation history, and calls the configured LLM provider.
+    """
+
+    # ── Class constants ──────────────────────────────────────────────────────
+    MAX_HISTORY_MESSAGES: int = 8
+    SOURCE_TRUNCATE_LENGTH: int = 300
+
+    def __init__(self) -> None:
+        """Initialize the RAG pipeline with the configured LLM provider."""
         self.provider = settings.llm_provider
 
         if self.provider == "groq":
@@ -38,6 +54,7 @@ class RAGPipeline:
     # ── Prompts ───────────────────────────────────────────────────────────────
 
     def _system_prompt(self) -> str:
+        """Return the system prompt that guides the LLM's behaviour."""
         return (
             "You are an intelligent study assistant powered by RAG.\n\n"
             "RULES:\n"
@@ -55,6 +72,7 @@ class RAGPipeline:
         chunks: List[dict],
         history: List[ChatMessage],
     ) -> str:
+        """Build the user prompt from retrieved context, history, and question."""
         context = "\n\n".join(
             f"--- Source {i+1}: {c['metadata'].get('filename','?')} "
             f"(Page {c['metadata'].get('page','?')}) ---\n{c['content']}"
@@ -63,7 +81,7 @@ class RAGPipeline:
 
         history_text = ""
         if history:
-            for msg in history[-8:]:
+            for msg in history[-self.MAX_HISTORY_MESSAGES:]:
                 label = "Student" if msg.role == "user" else "Assistant"
                 history_text += f"\n{label}: {msg.content}"
 
@@ -101,6 +119,41 @@ class RAGPipeline:
             )
             return response["message"]["content"]
 
+    # ── Streaming LLM Call ────────────────────────────────────────────────────
+
+    def _generate_stream(
+        self, system_prompt: str, user_prompt: str
+    ) -> Generator[str, None, None]:
+        """Stream tokens from the LLM provider, yielding each chunk's text."""
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+
+        if self.provider == "groq":
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=0.3,
+                max_tokens=512,
+                stream=True,
+            )
+            for chunk in response:
+                delta = chunk.choices[0].delta
+                if delta and delta.content:
+                    yield delta.content
+        else:
+            response = self.client.chat(
+                model=self.model,
+                messages=messages,
+                options={"temperature": 0.3, "num_predict": 512},
+                stream=True,
+            )
+            for chunk in response:
+                text = chunk.get("message", {}).get("content", "")
+                if text:
+                    yield text
+
     # ── Main query ────────────────────────────────────────────────────────────
 
     def query(
@@ -109,13 +162,14 @@ class RAGPipeline:
         document_ids: Optional[List[str]] = None,
         chat_history: Optional[List[ChatMessage]] = None,
     ) -> ChatResponse:
+        """Execute a full RAG query: retrieve → generate → format response."""
         start = time.time()
         history = chat_history or []
 
         # 1. Retrieve
         chunks = vector_store.search(
             query=question,
-            n_results=3,
+            n_results=settings.max_retrieval_docs,
             document_ids=document_ids,
         )
 
@@ -146,7 +200,7 @@ class RAGPipeline:
         # 3. Format sources
         sources = [
             SourceChunk(
-                content=c["content"][:300] + "…",
+                content=c["content"][:self.SOURCE_TRUNCATE_LENGTH] + "…",
                 source=c["metadata"].get("filename", "Unknown"),
                 page=c["metadata"].get("page"),
                 relevance_score=c["relevance_score"],
@@ -162,6 +216,62 @@ class RAGPipeline:
             model_used=self.model,
             processing_time_ms=ms,
         )
+
+    # ── Streaming query ───────────────────────────────────────────────────────
+
+    def query_stream(
+        self,
+        question: str,
+        document_ids: Optional[List[str]] = None,
+        chat_history: Optional[List[ChatMessage]] = None,
+    ) -> Generator[str, None, None]:
+        """Stream a RAG query as Server-Sent Events.
+
+        Yields SSE-formatted lines:
+        - ``data: {"token": "..."}\n\n`` for each generated token
+        - ``data: {"done": true, "sources": [...]}\n\n`` on completion
+        """
+        history = chat_history or []
+
+        # 1. Retrieve
+        chunks = vector_store.search(
+            query=question,
+            n_results=settings.max_retrieval_docs,
+            document_ids=document_ids,
+        )
+
+        if not chunks:
+            yield (
+                'data: {"token": "I couldn\'t find relevant information in your documents '
+                'to answer that question. Make sure you\'ve uploaded documents related '
+                'to your topic."}\n\n'
+            )
+            yield 'data: {"done": true, "sources": []}\n\n'
+            return
+
+        # 2. Stream generation
+        try:
+            for token in self._generate_stream(
+                system_prompt=self._system_prompt(),
+                user_prompt=self._user_prompt(question, chunks, history),
+            ):
+                yield f"data: {json.dumps({'token': token})}\n\n"
+        except Exception as e:
+            logger.error(f"LLM streaming error ({self.provider}): {e}")
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            return
+
+        # 3. Final event with sources
+        sources = [
+            {
+                "content": c["content"][:self.SOURCE_TRUNCATE_LENGTH] + "…",
+                "source": c["metadata"].get("filename", "Unknown"),
+                "page": c["metadata"].get("page"),
+                "relevance_score": c["relevance_score"],
+            }
+            for c in chunks
+        ]
+        yield f"data: {json.dumps({'done': True, 'sources': sources})}\n\n"
 
 
 rag_pipeline = RAGPipeline()

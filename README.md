@@ -1,7 +1,8 @@
 # 🧠 RAG Study Assistant
 
-> A production-style AI application that lets you upload documents and have intelligent conversations about them — powered by a full Retrieval-Augmented Generation (RAG) pipeline.
+> A production-grade AI application that lets you upload documents and have intelligent conversations about them — powered by a full Retrieval-Augmented Generation (RAG) pipeline.
 
+[![CI](https://github.com/gowthamiik09/rag-study-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/gowthamiik09/rag-study-assistant/actions/workflows/ci.yml)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-black?style=flat&logo=next.js&logoColor=white)
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-FF6B35?style=flat)
@@ -19,11 +20,17 @@
 | 📄 Document Upload | Drag-and-drop PDF upload with progress tracking |
 | 🔍 Semantic Search | Vector embeddings + cosine similarity via ChromaDB |
 | 💬 Contextual Chat | Multi-turn conversation with full history |
+| ⚡ Streaming Responses | Real-time token-by-token answers via Server-Sent Events |
 | 📚 Source Citations | Every answer shows exact source chunks + page numbers |
 | 🎯 Document Scoping | Focus questions on specific uploaded documents |
-| 🌙 Dark UI | Premium dark-mode interface with smooth animations |
+| 🔐 JWT Authentication | Secure user registration/login with bcrypt + JWT tokens |
+| 🛡️ Rate Limiting | Per-IP, per-endpoint request throttling (30/min chat, 10/min upload) |
+| 🗄️ SQLite Persistence | Document metadata stored in SQLite (WAL mode) |
+| 🌙 Dark UI | Premium dark-mode interface with smooth Framer Motion animations |
+| 📱 Mobile Responsive | Collapsible sidebar with mobile-friendly layout |
 | ⚡ Local LLM | Fully offline via Ollama (no OpenAI API key required) |
 | 🐳 Docker Ready | One-command deployment with Docker Compose |
+| ✅ CI/CD | GitHub Actions pipeline with tests + linting |
 
 ---
 
@@ -218,9 +225,12 @@ rag-study-assistant/
 | Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/api/v1/documents/upload` | Upload & process a PDF |
-| `GET` | `/api/v1/documents` | List all documents |
+| `GET` | `/api/v1/documents` | List all documents (paginated) |
 | `DELETE` | `/api/v1/documents/{id}` | Delete a document |
 | `POST` | `/api/v1/chat` | Ask a question |
+| `POST` | `/api/v1/chat/stream` | Ask a question (SSE streaming) |
+| `POST` | `/api/v1/auth/register` | Register a new user |
+| `POST` | `/api/v1/auth/login` | Login and get JWT token |
 | `GET` | `/health` | Health check |
 
 ---

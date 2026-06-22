@@ -25,6 +25,8 @@ export default function ChatMessage({ message }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
       className={`flex ${isUser ? "flex-row-reverse" : "flex-row"} items-start gap-3 px-4 py-1`}
+      role="article"
+      aria-label={`${isUser ? "You" : "Assistant"} said: ${message.content.substring(0, 80)}`}
     >
       {/* Avatar */}
       <div
@@ -34,6 +36,7 @@ export default function ChatMessage({ message }: Props) {
             : "text-white"
         }`}
         style={!isUser ? { background: "linear-gradient(135deg,#7c6dfa,#4f46e5)" } : {}}
+        aria-hidden="true"
       >
         {isUser ? "U" : "AI"}
       </div>
@@ -48,12 +51,12 @@ export default function ChatMessage({ message }: Props) {
             </span>
           )}
           <span className="flex items-center gap-1 text-[9.5px] text-[#5c5e6e] font-mono">
-            <Clock className="w-2.5 h-2.5" />
-            {time}
+            <Clock className="w-2.5 h-2.5" aria-hidden="true" />
+            <time>{time}</time>
           </span>
           {!isUser && message.processing_time_ms && (
             <span className="flex items-center gap-0.5 text-[9.5px] text-[#5c5e6e] font-mono">
-              <Zap className="w-2.5 h-2.5" />
+              <Zap className="w-2.5 h-2.5" aria-hidden="true" />
               {message.processing_time_ms}ms
             </span>
           )}
@@ -81,14 +84,16 @@ export default function ChatMessage({ message }: Props) {
           <div className="w-full">
             <button
               onClick={() => setShowSources(!showSources)}
+              aria-label={showSources ? "Hide sources" : `Show ${message.sources.length} sources`}
+              aria-expanded={showSources}
               className="flex items-center gap-1.5 text-[10.5px] text-[#5c5e6e] hover:text-[#9a9cad] transition-colors font-mono py-0.5"
             >
-              <BookOpen className="w-3 h-3" />
+              <BookOpen className="w-3 h-3" aria-hidden="true" />
               {message.sources.length} source{message.sources.length > 1 ? "s" : ""} used
               {showSources ? (
-                <ChevronUp className="w-3 h-3" />
+                <ChevronUp className="w-3 h-3" aria-hidden="true" />
               ) : (
-                <ChevronDown className="w-3 h-3" />
+                <ChevronDown className="w-3 h-3" aria-hidden="true" />
               )}
             </button>
 
@@ -99,10 +104,13 @@ export default function ChatMessage({ message }: Props) {
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   className="flex flex-col gap-1.5 mt-1.5 overflow-hidden"
+                  role="list"
+                  aria-label="Source citations"
                 >
                   {message.sources.map((src, i) => (
                     <div
                       key={i}
+                      role="listitem"
                       className="bg-[#1e2028] border border-white/[0.07] rounded-lg p-2.5 text-[11px]"
                     >
                       <div className="flex items-center justify-between mb-1.5">

@@ -1,3 +1,9 @@
+"""ChromaDB vector store for document chunk storage and similarity search.
+
+Wraps the ChromaDB PersistentClient to provide add, search, delete, and
+list operations over document embeddings.
+"""
+
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -13,7 +19,8 @@ logger = logging.getLogger(__name__)
 class VectorStore:
     """ChromaDB interface for storing and searching document embeddings."""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Connect to the persistent ChromaDB instance and ensure the collection exists."""
         self.client = chromadb.PersistentClient(
             path=settings.chroma_persist_dir,
             settings=ChromaSettings(anonymized_telemetry=False),
@@ -27,6 +34,7 @@ class VectorStore:
         )
 
     def add_chunks(self, chunks: List[Dict[str, Any]]) -> int:
+        """Embed and store a list of text chunks. Returns the count stored."""
         if not chunks:
             return 0
 
@@ -50,6 +58,7 @@ class VectorStore:
         n_results: int = 5,
         document_ids: Optional[List[str]] = None,
     ) -> List[Dict[str, Any]]:
+        """Return the top-n most similar chunks to the query string."""
         query_embedding = embedding_service.embed_text(query)
         where_filter = (
             {"document_id": {"$in": document_ids}} if document_ids else None
@@ -81,6 +90,7 @@ class VectorStore:
         return formatted
 
     def delete_document(self, document_id: str) -> int:
+        """Remove all chunks belonging to a document. Returns count deleted."""
         results = self.collection.get(where={"document_id": document_id})
         ids = results["ids"]
         if ids:
@@ -91,6 +101,7 @@ class VectorStore:
         return len(ids)
 
     def list_documents(self) -> List[Dict]:
+        """Return a unique list of document IDs and filenames in the store."""
         results = self.collection.get(include=["metadatas"])
         seen: Dict[str, Dict] = {}
         for meta in results["metadatas"]:

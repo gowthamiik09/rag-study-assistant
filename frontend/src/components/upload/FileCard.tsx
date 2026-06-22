@@ -37,11 +37,13 @@ export default function FileCard({
         className={`w-7 h-7 min-w-[28px] rounded-lg flex items-center justify-center ${
           isSelected ? "bg-brand-500/20" : "bg-white/[0.06]"
         }`}
+        aria-hidden="true"
       >
         <FileText
           className={`w-3.5 h-3.5 ${
             isSelected ? "text-brand-400" : "text-[#9a9cad]"
           }`}
+          aria-hidden="true"
         />
       </div>
 
@@ -54,7 +56,7 @@ export default function FileCard({
           <span className="text-[9.5px] text-[#5c5e6e] font-mono">
             {doc.page_count}p
           </span>
-          <Layers className="w-2.5 h-2.5 text-[#5c5e6e]" />
+          <Layers className="w-2.5 h-2.5 text-[#5c5e6e]" aria-hidden="true" />
           <span className="text-[9.5px] text-[#5c5e6e] font-mono">
             {doc.chunk_count} chunks
           </span>
@@ -67,11 +69,12 @@ export default function FileCard({
           e.stopPropagation();
           onDelete(doc.id);
         }}
+        aria-label={`Delete document ${doc.filename}`}
         className="opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6
                    rounded flex items-center justify-center
                    hover:bg-red-500/10 text-[#5c5e6e] hover:text-red-400"
       >
-        <Trash2 className="w-3 h-3" />
+        <Trash2 className="w-3 h-3" aria-hidden="true" />
       </button>
     </motion.div>
   );

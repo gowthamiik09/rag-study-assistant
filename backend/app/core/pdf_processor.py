@@ -1,10 +1,15 @@
-import os
-import re
-import logging
-from typing import List, Dict, Any, Optional, Tuple
+"""PDF processing module for text extraction and chunking.
 
-from pypdf import PdfReader
+Uses pypdf for text extraction and LangChain's RecursiveCharacterTextSplitter
+for intelligent, overlapping chunk creation.
+"""
+
+import logging
+import re
+from typing import Any, Dict, List, Optional, Tuple
+
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from pypdf import PdfReader
 
 from app.config import settings
 
@@ -14,7 +19,8 @@ logger = logging.getLogger(__name__)
 class PDFProcessor:
     """Extracts text from PDFs and splits into overlapping chunks."""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize the text splitter with configured chunk size and overlap."""
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=settings.chunk_size,
             chunk_overlap=settings.chunk_overlap,
@@ -23,6 +29,7 @@ class PDFProcessor:
         )
 
     def extract_text(self, file_path: str) -> Dict[str, Any]:
+        """Extract text from all pages of a PDF file."""
         reader = PdfReader(file_path)
         pages = []
         full_text = ""
@@ -42,6 +49,7 @@ class PDFProcessor:
     def create_chunks(
         self, file_path: str, filename: str, document_id: str
     ) -> Tuple[List[Dict[str, Any]], int]:
+        """Extract and chunk a PDF, returning (chunks, page_count)."""
         logger.info(f"Processing PDF: {filename}")
         extraction = self.extract_text(file_path)
 
@@ -73,6 +81,7 @@ class PDFProcessor:
         return chunks, extraction["page_count"]
 
     def _extract_page_hint(self, chunk_text: str) -> Optional[int]:
+        """Try to detect which page a chunk belongs to from embedded markers."""
         match = re.search(r"\[Page (\d+)\]", chunk_text)
         return int(match.group(1)) if match else None
 

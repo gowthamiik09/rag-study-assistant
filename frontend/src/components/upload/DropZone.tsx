@@ -55,6 +55,8 @@ export default function DropZone({ onUploadSuccess }: Props) {
       <motion.div
         {...(() => { const { onAnimationStart, onDragStart, onDragEnd, onDrag, ...rest } = getRootProps(); return rest; })()}
         whileHover={state !== "uploading" ? { scale: 1.01 } : {}}
+        role="button"
+        aria-label="Upload a PDF document. Drag and drop or click to browse."
         className={`relative border-2 border-dashed rounded-xl p-5 text-center cursor-pointer
           transition-all duration-200 select-none
           ${
@@ -69,7 +71,7 @@ export default function DropZone({ onUploadSuccess }: Props) {
               : "border-white/10 hover:border-brand-500/50 hover:bg-brand-500/5"
           }`}
       >
-        <input {...getInputProps()} />
+        <input {...getInputProps()} aria-label="File upload input" />
 
         <AnimatePresence mode="wait">
           {state === "idle" && (
@@ -81,7 +83,7 @@ export default function DropZone({ onUploadSuccess }: Props) {
               className="flex flex-col items-center gap-2"
             >
               <div className="w-9 h-9 rounded-xl bg-brand-500/20 flex items-center justify-center">
-                <Upload className="w-4.5 h-4.5 text-brand-400" />
+                <Upload className="w-4.5 h-4.5 text-brand-400" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-[12px] font-medium text-[#9a9cad]">
@@ -100,11 +102,13 @@ export default function DropZone({ onUploadSuccess }: Props) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex flex-col items-center gap-2"
+              role="status"
+              aria-label={`Uploading: ${progress}% complete`}
             >
               <p className="text-[11px] text-[#9a9cad] font-mono">
                 Processing… {progress}%
               </p>
-              <div className="w-full bg-white/10 rounded-full h-1">
+              <div className="w-full bg-white/10 rounded-full h-1" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
                 <motion.div
                   className="bg-brand-500 h-1 rounded-full"
                   initial={{ width: 0 }}
@@ -124,8 +128,10 @@ export default function DropZone({ onUploadSuccess }: Props) {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               className="flex flex-col items-center gap-1.5"
+              role="status"
+              aria-label="Document uploaded successfully"
             >
-              <CheckCircle className="w-7 h-7 text-green-400" />
+              <CheckCircle className="w-7 h-7 text-green-400" aria-hidden="true" />
               <p className="text-[12px] text-green-400 font-medium">
                 Document ready!
               </p>
@@ -138,8 +144,9 @@ export default function DropZone({ onUploadSuccess }: Props) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex flex-col items-center gap-1.5"
+              role="alert"
             >
-              <AlertCircle className="w-6 h-6 text-red-400" />
+              <AlertCircle className="w-6 h-6 text-red-400" aria-hidden="true" />
               <p className="text-[11px] text-red-400 text-center max-w-[180px]">
                 {error}
               </p>
@@ -148,6 +155,7 @@ export default function DropZone({ onUploadSuccess }: Props) {
                   e.stopPropagation();
                   setState("idle");
                 }}
+                aria-label="Try uploading again"
                 className="text-[10px] text-[#9a9cad] underline"
               >
                 Try again

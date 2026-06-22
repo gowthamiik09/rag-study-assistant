@@ -45,7 +45,7 @@ export default function ChatInput({ onSend, isLoading, disabled }: Props) {
   };
 
   return (
-    <div className="px-4 pb-5 pt-3 border-t border-white/[0.07] bg-[#111318]">
+    <div className="px-3 md:px-4 pb-4 md:pb-5 pt-3 border-t border-white/[0.07] bg-[#111318]">
       {/* Suggestion pills — only shown when no input */}
       {!input && !isLoading && (
         <div className="flex flex-wrap gap-1.5 mb-3">
@@ -57,6 +57,7 @@ export default function ChatInput({ onSend, isLoading, disabled }: Props) {
                 setInput(s);
                 textareaRef.current?.focus();
               }}
+              aria-label={`Suggest: ${s}`}
               className="text-[11px] px-3 py-1.5 rounded-full border border-white/10
                          text-[#9a9cad] hover:border-brand-500/50 hover:text-brand-300
                          transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
@@ -76,6 +77,7 @@ export default function ChatInput({ onSend, isLoading, disabled }: Props) {
           onKeyDown={handleKey}
           onInput={autoResize}
           disabled={disabled || isLoading}
+          aria-label="Type your question"
           placeholder={
             disabled
               ? "Upload a document to start chatting…"
@@ -92,20 +94,21 @@ export default function ChatInput({ onSend, isLoading, disabled }: Props) {
           whileTap={{ scale: 0.9 }}
           onClick={handleSend}
           disabled={!input.trim() || isLoading || disabled}
+          aria-label="Send message"
           className="w-8 h-8 min-w-[32px] rounded-lg bg-brand-500 flex items-center
                      justify-content-center justify-center hover:bg-brand-400
                      disabled:opacity-35 disabled:cursor-not-allowed
                      transition-colors self-end"
         >
           {isLoading ? (
-            <Loader2 className="w-4 h-4 text-white animate-spin" />
+            <Loader2 className="w-4 h-4 text-white animate-spin" aria-hidden="true" />
           ) : (
-            <Send className="w-3.5 h-3.5 text-white" />
+            <Send className="w-3.5 h-3.5 text-white" aria-hidden="true" />
           )}
         </motion.button>
       </div>
 
-      <p className="text-center text-[9.5px] text-[#5c5e6e] mt-2 font-mono">
+      <p className="text-center text-[9.5px] text-[#5c5e6e] mt-2 font-mono" aria-hidden="true">
         Enter to send · Shift+Enter for new line
       </p>
     </div>

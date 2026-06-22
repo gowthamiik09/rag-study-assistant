@@ -1,8 +1,17 @@
-from pydantic_settings import BaseSettings
+"""Application configuration loaded from environment variables.
+
+Uses pydantic-settings to read values from ``.env`` and environment.
+All settings have sensible defaults for local development.
+"""
+
 from typing import List, Optional
+
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    """Central configuration for the RAG Study Assistant backend."""
+
     # LLM Provider: "groq" for cloud, "ollama" for local
     llm_provider: str = "groq"
 
@@ -24,6 +33,12 @@ class Settings(BaseSettings):
 
     # CORS
     cors_origins: List[str] = ["http://localhost:3000"]
+
+    # JWT Authentication
+    jwt_secret_key: str = "dev-secret-key-change-in-production"
+
+    # Database
+    database_url: str = "./study_assistant.db"
 
     class Config:
         env_file = ".env"
