@@ -251,9 +251,9 @@ All settings live in `backend/.env`:
 
 ## 🔮 Future Improvements
 
-- [ ] Streaming LLM responses with Server-Sent Events
-- [ ] User authentication (JWT + refresh tokens)
-- [ ] SQLite/PostgreSQL for persistent document metadata
+- [x] Streaming LLM responses with Server-Sent Events
+- [x] User authentication (JWT + refresh tokens)
+- [x] SQLite/PostgreSQL for persistent document metadata
 - [ ] OCR support for scanned PDFs (pytesseract)
 - [ ] Multi-modal support (images in PDFs)
 - [ ] Export chat as PDF
